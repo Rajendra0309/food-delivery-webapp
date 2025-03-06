@@ -80,10 +80,9 @@ const OrderHistory = ({ orders, darkMode }) => (
 );
 
 // Enhanced Food Item Card
-const FoodItemCard = ({ item, darkMode, onAddToCart }) => {
+const FoodItemCard = ({ item, darkMode, onAddToCart, isExpanded, onToggleExpand }) => {
   const [quantity, setQuantity] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
 
   const handleAddToCart = () => {
     if (quantity > 0) {
@@ -183,24 +182,36 @@ const FoodItemCard = ({ item, darkMode, onAddToCart }) => {
         </div>
 
         <button 
-          onClick={() => setShowDetails(!showDetails)}
+          onClick={onToggleExpand}
           className="mt-3 text-sm text-orange-500 hover:text-orange-600 flex items-center"
         >
           View Details
           <ChevronDown 
             size={16} 
-            className={`ml-1 transition-transform duration-300 ${showDetails ? 'rotate-180' : ''}`}
+            className={`ml-1 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
           />
         </button>
 
-        {showDetails && (
-          <div className="mt-3 p-3 rounded-lg bg-gray-100 dark:bg-gray-700">
-            <p className="text-sm">{item.description}</p>
+        {isExpanded && (
+          <div className={`mt-3 p-3 rounded-lg ${
+            darkMode 
+              ? 'bg-gray-700' 
+              : 'bg-orange-50'
+          }`}>
+            <p className={`text-sm ${
+              darkMode 
+                ? 'text-gray-200' 
+                : 'text-gray-700'
+            }`}>{item.description}</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {item.tags.map((tag, index) => (
                 <span 
                   key={index}
-                  className="text-xs px-2 py-1 rounded-full bg-gray-200 dark:bg-gray-600"
+                  className={`text-xs px-2 py-1 rounded-full ${
+                    darkMode 
+                      ? 'bg-gray-600 text-gray-200' 
+                      : 'bg-orange-100 text-orange-700'
+                  }`}
                 >
                   {tag}
                 </span>
@@ -301,6 +312,7 @@ const FoodDeliveryApp = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [orders, setOrders] = useState([]);
   const [showOrderHistory, setShowOrderHistory] = useState(false);
+  const [expandedCards, setExpandedCards] = useState([]);
 
   const categories = ['All', 'Pizza', 'Burgers', 'Sushi', 'Salads', 'Desserts'];
 
@@ -433,6 +445,16 @@ const FoodDeliveryApp = () => {
      item.cuisine.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  const toggleCardExpansion = (index) => {
+    setExpandedCards(prevExpanded => {
+      if (prevExpanded.includes(index)) {
+        return prevExpanded.filter(id => id !== index);
+      } else {
+        return [...prevExpanded, index];
+      }
+    });
+  };
+
   return (
     <div className={`min-h-screen transition-colors duration-300 
       ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100'}`}>
@@ -548,6 +570,8 @@ const FoodDeliveryApp = () => {
               item={item}
               darkMode={darkMode}
               onAddToCart={handleAddToCart}
+              isExpanded={expandedCards.includes(index)}
+              onToggleExpand={() => toggleCardExpansion(index)}
             />
           ))}
         </div>
